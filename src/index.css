@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@theme {
+  --font-cinzel: "Cinzel", serif;
+  --font-serif: "Marcellus", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --breakpoint-xs: 480px;
+  --breakpoint-3xl: 1600px;
+}
+
+@layer base {
+  html {
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-[#050505] text-[#F0EDE8] antialiased overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  /* Liquid Glass System */
+  /* Fallbacks for older browsers or reduced transparency */
+  .liquid-glass {
+    background-color: rgba(15, 15, 17, 0.95);
+    transition: all 0.3s ease;
+  }
+  .liquid-panel {
+    background-color: rgba(20, 20, 22, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  .liquid-input {
+    background-color: rgba(15, 15, 17, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+  }
+  .liquid-input:focus {
+    background-color: rgba(15, 15, 17, 1);
+    border-color: rgba(255, 0, 0, 0.6);
+  }
+  .liquid-button {
+    background-color: rgba(30, 30, 35, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+  }
+  .liquid-button:hover:not(:disabled) {
+    background-color: rgba(45, 45, 50, 1);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Progressive Enhancement for modern browsers */
+  @supports (backdrop-filter: blur(24px)) or (-webkit-backdrop-filter: blur(24px)) {
+    .liquid-glass {
+      background-color: rgba(15, 15, 17, 0.85);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      transform: translateZ(0); /* GPU acceleration */
+    }
+
+    .liquid-panel {
+      background-color: rgba(20, 20, 22, 0.75);
+      backdrop-filter: blur(32px) saturate(150%);
+      -webkit-backdrop-filter: blur(32px) saturate(150%);
+      transform: translateZ(0);
+    }
+
+    .liquid-input {
+      background-color: rgba(10, 10, 12, 0.6);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      transform: translateZ(0);
+    }
+    .liquid-input:focus {
+      background-color: rgba(15, 15, 17, 0.8);
+    }
+
+    .liquid-button {
+      background-color: rgba(30, 30, 35, 0.6);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      transform: translateZ(0);
+    }
+    .liquid-button:hover:not(:disabled) {
+      background-color: rgba(45, 45, 50, 0.8);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .liquid-glass, .liquid-panel, .liquid-input, .liquid-button {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .liquid-glass { background-color: rgba(15, 15, 17, 1); }
+    .liquid-panel { background-color: rgba(20, 20, 22, 1); }
+    .liquid-input { background-color: rgba(15, 15, 17, 1); }
+    .liquid-button { background-color: rgba(30, 30, 35, 1); }
+  }
+
+  .gothic-glow-red {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .gothic-glow-red-hover:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Minimalist Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 0, 0, 0.4);
+}
