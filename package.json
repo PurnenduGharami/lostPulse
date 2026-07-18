@@ -3,7 +3,7 @@
   "description": "Local-first desktop application for tracking and planning time.",
   "author": "Lost Pulse",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
