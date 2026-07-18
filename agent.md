@@ -177,3 +177,13 @@ For every task:
 * Avoid unnecessary refactors.
 * Write maintainable, production-ready code.
 * Never skip the startup procedure.
+
+---
+
+# Release Process
+
+When pushing to git or generating a new update/executable:
+
+* Always increment the version number in `package.json` before building or pushing.
+* Always update the relevant `context/*.md` files to ensure they reflect the current state and prevent context rot.
+* Create a descriptive commit message highlighting the version bump and changes.
