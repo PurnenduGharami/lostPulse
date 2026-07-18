@@ -253,6 +253,52 @@ export const getMaxHoursInSingleDay = (timeBlocks: Record<string, import('./type
 };
 
 /**
+ * Calculates the effective duration for a list of blocks, splitting overlapping time evenly.
+ * Returns an object mapping block.id to its effective duration in milliseconds.
+ */
+export const calculateEffectiveDurations = (blocks: import('./types').TimeBlock[]): Record<string, number> => {
+  const durations: Record<string, number> = {};
+  
+  if (blocks.length === 0) return durations;
+
+  blocks.forEach(b => { durations[b.id] = 0; });
+
+  // Create an array of events (start and end)
+  const events: { time: number, type: 'start' | 'end', id: string }[] = [];
+  blocks.forEach(b => {
+    if (b.startTime < b.endTime) {
+      events.push({ time: b.startTime, type: 'start', id: b.id });
+      events.push({ time: b.endTime, type: 'end', id: b.id });
+    }
+  });
+
+  events.sort((a, b) => a.time - b.time);
+
+  let activeBlocks = new Set<string>();
+  let lastTime = events.length > 0 ? events[0].time : 0;
+
+  for (const event of events) {
+    const currentTime = event.time;
+    if (currentTime > lastTime && activeBlocks.size > 0) {
+      const timeDiff = currentTime - lastTime;
+      const splitTime = timeDiff / activeBlocks.size;
+      for (const id of activeBlocks) {
+        durations[id] += splitTime;
+      }
+    }
+
+    if (event.type === 'start') {
+      activeBlocks.add(event.id);
+    } else {
+      activeBlocks.delete(event.id);
+    }
+    lastTime = currentTime;
+  }
+
+  return durations;
+};
+
+/**
  * Counts how many unique days before `beforeDateStr` have tracker data.
  */
 export const getCompletedDaysCount = (timeBlocks: Record<string, import('./types').TimeBlock[]>, beforeDateStr: string): number => {

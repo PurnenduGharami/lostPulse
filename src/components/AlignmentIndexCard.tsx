@@ -23,25 +23,32 @@ export default function AlignmentIndexCard({ plannedBlocks, trackedBlocks, refle
   let planDeviationMs = 0;
   let avgStartDelayMs = 0;
 
+  const plannedTimeMs = plannedBlocks.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
+  const recordedTimeMs = trackedBlocks.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
+
+  // 1. Plan Score (40%)
+  const planRatio = Math.min(plannedTimeMs / (14 * 3600000), 1);
+  score += planRatio * 40;
+
+  // 2. Record Score (40%)
+  volumeRatio = Math.min(recordedTimeMs / (14 * 3600000), 1);
+  score += volumeRatio * 40;
+
+  // 3. Category Match (20%)
+  const plannedCategoryIds = new Set(plannedBlocks.map(b => b.categoryId || b.category).filter(Boolean));
+  let matchedMs = 0;
+  trackedBlocks.forEach(b => {
+    const catId = b.categoryId || b.category;
+    if (catId && plannedCategoryIds.has(catId)) {
+      matchedMs += (b.endTime - b.startTime);
+    }
+  });
+  trackingRatio = recordedTimeMs > 0 ? Math.min(matchedMs / recordedTimeMs, 1) : 0;
+  score += trackingRatio * 20;
+
   if (plannedBlocks.length > 0) {
-    // 1. Completion Ratio (0-40)
     const completedTasksCount = plannedBlocks.filter(b => b.status === 'Completed').length;
     completionRatio = completedTasksCount / plannedBlocks.length;
-    score += completionRatio * 40;
-
-    // 2. Volume Ratio (0-40)
-    const plannedTimeMs = plannedBlocks.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-    const recordedTimeMs = trackedBlocks.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-    
-    if (plannedTimeMs > 0) {
-      volumeRatio = Math.min(recordedTimeMs / plannedTimeMs, 1);
-      score += volumeRatio * 40;
-    }
-
-    // 3. Exact Matching (0-20)
-    const linkedTrackedBlocks = trackedBlocks.filter(b => b.linkedPlannerTaskId).length;
-    trackingRatio = Math.min(linkedTrackedBlocks / plannedBlocks.length, 1);
-    score += trackingRatio * 20;
 
     // Calculate new metrics
     unplannedTimeMs = trackedBlocks.filter(b => !b.linkedPlannerTaskId).reduce((acc, b) => acc + (b.endTime - b.startTime), 0);

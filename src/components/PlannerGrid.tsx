@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { getBlocksForDay, calculateBlockLayout } from '../utils';
 import CategoryPicker from './CategoryPicker';
 import DailyNoteOverlay from './DailyNoteOverlay';
-import LiquidNumberInput from './LiquidNumberInput';
 import { useNotification } from '../contexts/NotificationContext';
 
 interface PlannerGridProps {
@@ -55,7 +54,11 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
   const [editDesc, setEditDesc] = useState('');
   const [editStartTimeStr, setEditStartTimeStr] = useState('');
   const [editEndTimeStr, setEditEndTimeStr] = useState('');
-  const [editAccumulatedTimeMs, setEditAccumulatedTimeMs] = useState<number | ''>(0);
+
+  // Block drag-move state
+  const [movingBlock, setMovingBlock] = useState<TimeBlock | null>(null);
+  const [moveStartY, setMoveStartY] = useState(0);
+  const [moveCurrentY, setMoveCurrentY] = useState(0);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   
@@ -171,13 +174,42 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
+    if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const y = e.clientY - rect.top;
+
+    if (movingBlock) {
+      setMoveCurrentY(Math.max(0, Math.min(y, totalPixels)));
+      return;
+    }
+
+    if (!isDragging) return;
     setDragCurrentPx(Math.max(0, Math.min(y, totalPixels)));
   };
 
   const handleMouseUp = () => {
+    // Handle block drag-move
+    if (movingBlock) {
+      const deltaPxSnapped = Math.round((moveCurrentY - moveStartY) / 15) * 15;
+      if (deltaPxSnapped !== 0) {
+        const deltaMs = (deltaPxSnapped / pixelsPerHour) * 3600000;
+        const newStartTime = movingBlock.startTime + deltaMs;
+        const newEndTime = movingBlock.endTime + deltaMs;
+        const dayStart = baseDateMs;
+        const dayEnd = baseDateMs + 24 * 3600000;
+        if (newStartTime >= dayStart && newEndTime <= dayEnd) {
+          blockActions.updateBlock(movingBlock.date, {
+            ...movingBlock,
+            startTime: newStartTime,
+            endTime: newEndTime,
+            updatedAt: Date.now()
+          });
+        }
+      }
+      setMovingBlock(null);
+      return;
+    }
+
     if (!isDragging) return;
     setIsDragging(false);
 
@@ -220,6 +252,26 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
     blockActions.saveBlock(currentDate, newBlock);
   };
 
+  const handleBlockMouseDown = (e: React.MouseEvent, block: TimeBlock) => {
+    e.stopPropagation();
+    if (e.button !== 0) return;
+    if (isPastDay) return;
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const mouseY = e.clientY - rect.top;
+    setMovingBlock(block);
+    setMoveStartY(mouseY);
+    setMoveCurrentY(mouseY);
+  };
+
+  const handleMouseLeave = () => {
+    if (movingBlock) {
+      setMovingBlock(null);
+      return;
+    }
+    handleMouseUp();
+  };
+
   const openEditModalForBlock = (block: TimeBlock) => {
     setSelectedBlock(block);
     setEditTitle(block.title);
@@ -231,7 +283,6 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
     const pad = (n: number) => n.toString().padStart(2, '0');
     setEditStartTimeStr(`${pad(startD.getHours())}:${pad(startD.getMinutes())}`);
     setEditEndTimeStr(`${pad(endD.getHours())}:${pad(endD.getMinutes())}`);
-    setEditAccumulatedTimeMs(block.accumulatedTimeMs ? Math.floor(block.accumulatedTimeMs / 60000) : 0);
 
     setModalMode('edit');
   };
@@ -270,7 +321,6 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
     setEditDesc('');
     setEditStartTimeStr('09:00');
     setEditEndTimeStr('10:00');
-    setEditAccumulatedTimeMs(0);
     setModalMode('create');
   };
 
@@ -342,7 +392,7 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
         description: editDesc,
         startTime,
         endTime,
-        accumulatedTimeMs: typeof editAccumulatedTimeMs === 'number' ? editAccumulatedTimeMs * 60000 : 0,
+        accumulatedTimeMs: endTime - startTime,
         updatedAt: Date.now()
       });
     } else if (modalMode === 'create') {
@@ -354,7 +404,7 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
         date: currentDate,
         startTime,
         endTime,
-        accumulatedTimeMs: typeof editAccumulatedTimeMs === 'number' ? editAccumulatedTimeMs * 60000 : 0,
+        accumulatedTimeMs: endTime - startTime,
         status: 'Pending',
         createdAt: Date.now()
       });
@@ -490,12 +540,12 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
 
             {/* Grid Area */}
             <div
-              className="flex-1 relative cursor-crosshair"
+              className={`flex-1 relative ${movingBlock ? 'cursor-grabbing' : 'cursor-crosshair'}`}
               ref={containerRef}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
             >
               {/* Grid Lines */}
               <div className="absolute left-0 right-0 top-0 bottom-0 flex flex-col pointer-events-none opacity-40">
@@ -533,21 +583,24 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
                   const isShort = durationMs < 3600000;
                   
                   const blockLayout = layout.get(block.id) || { width: 100, left: 0 };
+                  const isBeingMoved = movingBlock?.id === block.id;
+                  const moveDeltaPx = isBeingMoved ? Math.round((moveCurrentY - moveStartY) / 15) * 15 : 0;
 
                 return (
                   <div
                     key={block.id}
                     tabIndex={0}
-                    className="absolute border-t-2 border-b-2 bg-transparent hover:bg-white/5 cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.01] hover:z-40 z-30 flex flex-col group overflow-hidden before:absolute before:-inset-y-2 before:-inset-x-0 before:z-[-1] focus:ring-2 focus:ring-white outline-none"
+                    className={`absolute border-t-2 border-b-2 bg-transparent cursor-grab active:cursor-grabbing flex flex-col group overflow-hidden before:absolute before:-inset-y-2 before:-inset-x-0 before:z-[-1] focus:ring-2 focus:ring-white outline-none ${isBeingMoved ? 'z-[100] opacity-80 shadow-2xl shadow-black/50 scale-[1.02] ring-2 ring-white/20' : 'hover:bg-white/5 transition-all duration-200 hover:scale-[1.01] hover:z-40 z-30'}`}
                     style={{ 
-                      top: `${topPx}px`, 
+                      top: `${topPx + moveDeltaPx}px`, 
                       height: `${heightPx}px`, 
                       minHeight: '15px', 
                       borderColor: `${color}cc`,
                       left: `${blockLayout.left}%`,
-                      width: `calc(${blockLayout.width}% - 16px)` // -16px to account for right-4 padding roughly
+                      width: `calc(${blockLayout.width}% - 16px)`,
+                      transition: isBeingMoved ? 'none' : undefined
                     }}
-                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => handleBlockMouseDown(e, block)}
                     onDoubleClick={(e) => handleBlockDoubleClick(e, block)}
                     onKeyDown={(e) => handleBlockKeyDown(e, block)}
                     onContextMenu={(e) => handleContextMenu(e, block)}
@@ -714,13 +767,16 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
                       </div>
                       <div className="flex space-x-4">
                         <div className="flex-[1]">
-                          <label className="block text-xs text-white font-mono mb-1">Accumulated Time (mins)</label>
-                          <LiquidNumberInput
-                            min={0}
-                            value={editAccumulatedTimeMs}
-                            onChange={(val) => setEditAccumulatedTimeMs(typeof val === 'number' ? val : (parseInt(val as string, 10) || 0))}
-                            className="w-full bg-transparent text-white text-left text-sm px-2 py-2 outline-none"
-                          />
+                          <label className="block text-xs text-white font-mono mb-1">Total Time (mins)</label>
+                          <div className="w-full bg-transparent text-[#aaaaaa] text-left text-sm px-2 py-2">
+                            {(() => {
+                              const [sH, sM] = editStartTimeStr.split(':').map(Number);
+                              const [eH, eM] = editEndTimeStr.split(':').map(Number);
+                              const start = sH * 60 + sM;
+                              const end = eH * 60 + eM;
+                              return Math.max(0, end - start);
+                            })()}
+                          </div>
                         </div>
                         <div className="flex-[2]" />
                       </div>

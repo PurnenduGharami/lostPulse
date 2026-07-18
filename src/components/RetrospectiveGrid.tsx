@@ -36,6 +36,11 @@ export default function RetrospectiveGrid({ timeBlocks, blockActions, currentDat
   const [dragCurrentPx, setDragCurrentPx] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Block drag-move state
+  const [movingBlock, setMovingBlock] = useState<TimeBlock | null>(null);
+  const [moveStartY, setMoveStartY] = useState(0);
+  const [moveCurrentY, setMoveCurrentY] = useState(0);
+
   type ModalMode = 'hidden' | 'edit' | 'create';
   const [modalMode, setModalMode] = useState<ModalMode>('hidden');
   const [selectedBlock, setSelectedBlock] = useState<TimeBlock | null>(null);
@@ -156,13 +161,43 @@ export default function RetrospectiveGrid({ timeBlocks, blockActions, currentDat
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
+    if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const y = e.clientY - rect.top;
+
+    if (movingBlock) {
+      setMoveCurrentY(Math.max(0, Math.min(y, totalPixels)));
+      return;
+    }
+
+    if (!isDragging) return;
     setDragCurrentPx(Math.max(0, Math.min(y, totalPixels)));
   };
 
   const handleMouseUp = () => {
+    // Handle block drag-move
+    if (movingBlock) {
+      const deltaPxSnapped = Math.round((moveCurrentY - moveStartY) / 15) * 15;
+      if (deltaPxSnapped !== 0) {
+        const deltaMs = (deltaPxSnapped / pixelsPerHour) * 3600000;
+        const newStartTime = movingBlock.startTime + deltaMs;
+        const newEndTime = movingBlock.endTime + deltaMs;
+        const [cy, cm, cd] = currentDate.split('-').map(Number);
+        const dayStart = new Date(cy, cm - 1, cd, 0, 0, 0).getTime();
+        const dayEnd = dayStart + 24 * 3600000;
+        if (newStartTime >= dayStart && newEndTime <= dayEnd && newEndTime <= Date.now()) {
+          blockActions.updateBlock(movingBlock.date, {
+            ...movingBlock,
+            startTime: newStartTime,
+            endTime: newEndTime,
+            updatedAt: Date.now()
+          });
+        }
+      }
+      setMovingBlock(null);
+      return;
+    }
+
     if (!isDragging) return;
     setIsDragging(false);
 
@@ -211,6 +246,25 @@ export default function RetrospectiveGrid({ timeBlocks, blockActions, currentDat
     };
 
     blockActions.saveBlock(currentDate, newBlock);
+  };
+
+  const handleBlockMouseDown = (e: React.MouseEvent, block: TimeBlock) => {
+    e.stopPropagation();
+    if (e.button !== 0) return;
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const mouseY = e.clientY - rect.top;
+    setMovingBlock(block);
+    setMoveStartY(mouseY);
+    setMoveCurrentY(mouseY);
+  };
+
+  const handleMouseLeave = () => {
+    if (movingBlock) {
+      setMovingBlock(null);
+      return;
+    }
+    handleMouseUp();
   };
 
   const openEditModalForBlock = (block: TimeBlock) => {
@@ -448,12 +502,12 @@ export default function RetrospectiveGrid({ timeBlocks, blockActions, currentDat
 
             {/* Grid Area */}
             <div
-              className="flex-1 relative cursor-crosshair"
+              className={`flex-1 relative ${movingBlock ? 'cursor-grabbing' : 'cursor-crosshair'}`}
               ref={containerRef}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
             >
               {/* Grid Lines */}
               <div className="absolute left-0 right-0 top-0 bottom-0 flex flex-col pointer-events-none opacity-40">
@@ -492,21 +546,24 @@ export default function RetrospectiveGrid({ timeBlocks, blockActions, currentDat
                   const isShort = durationMs < 3600000;
                   
                   const blockLayout = layout.get(block.id) || { width: 100, left: 0 };
+                  const isBeingMoved = movingBlock?.id === block.id;
+                  const moveDeltaPx = isBeingMoved ? Math.round((moveCurrentY - moveStartY) / 15) * 15 : 0;
 
                 return (
                   <div
                     key={block.id}
                     tabIndex={0}
-                    className="absolute border-t-2 border-b-2 bg-transparent hover:bg-white/5 cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-[1.01] hover:z-40 z-30 flex flex-col group overflow-hidden before:absolute before:-inset-y-2 before:-inset-x-0 before:z-[-1] focus:ring-2 focus:ring-white outline-none"
+                    className={`absolute border-t-2 border-b-2 bg-transparent cursor-grab active:cursor-grabbing flex flex-col group overflow-hidden before:absolute before:-inset-y-2 before:-inset-x-0 before:z-[-1] focus:ring-2 focus:ring-white outline-none ${isBeingMoved ? 'z-[100] opacity-80 shadow-2xl shadow-black/50 scale-[1.02] ring-2 ring-white/20' : 'hover:bg-white/5 transition-all duration-200 hover:scale-[1.01] hover:z-40 z-30'}`}
                     style={{ 
-                      top: `${topPx}px`, 
+                      top: `${topPx + moveDeltaPx}px`, 
                       height: `${heightPx}px`, 
                       minHeight: '15px', 
                       borderColor: `${color}cc`,
                       left: `${blockLayout.left}%`,
-                      width: `calc(${blockLayout.width}% - 16px)` // -16px to account for right-4 padding roughly
+                      width: `calc(${blockLayout.width}% - 16px)`,
+                      transition: isBeingMoved ? 'none' : undefined
                     }}
-                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => handleBlockMouseDown(e, block)}
                     onDoubleClick={(e) => handleBlockDoubleClick(e, block)}
                     onKeyDown={(e) => handleBlockKeyDown(e, block)}
                     onContextMenu={(e) => handleContextMenu(e, block)}

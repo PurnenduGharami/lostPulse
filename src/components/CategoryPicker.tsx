@@ -148,7 +148,7 @@ function ManageCategoriesModal({ categories, categoryActions, onClose }: { categ
   const [editName, setEditName] = useState('');
   const [editColor, setEditColor] = useState('#ffffff');
   
-  const shades = ['#ffffff', '#ffcccc', '#ff9999', '#ff6666', '#ff3333', '#cc0000', '#8b0000'];
+  const shades = ['#ffffff', '#555555', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4', '#cc0000'];
 
   const startEdit = (c?: Category) => {
     if (c) {

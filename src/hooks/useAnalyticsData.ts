@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { TimeBlock, Category, DailyReflection } from '../types';
+import { calculateEffectiveDurations } from '../utils';
 import type { TimeRange } from '../components/AnalyticsContainer';
 
 interface AnalyticsDataOptions {
@@ -96,31 +97,42 @@ export function useAnalyticsData({
     let totalPlannedMs = 0;
     let totalFocusSessions = 0;
     
+    const rangeTEff = calculateEffectiveDurations(rangeTimeBlocks);
     rangeTimeBlocks.forEach(b => {
-      totalRecordedMs += (b.endTime - b.startTime);
+      totalRecordedMs += (rangeTEff[b.id] || 0);
       if (b.linkedPlannerTaskId || (b.title && b.title.includes('Focus'))) {
         totalFocusSessions++;
       }
     });
 
+    const rangePEff = calculateEffectiveDurations(rangePlannedBlocks);
     rangePlannedBlocks.forEach(b => {
-      totalPlannedMs += (b.endTime - b.startTime);
+      totalPlannedMs += (rangePEff[b.id] || 0);
     });
 
     const calculateAlignment = (tracked: TimeBlock[], planned: TimeBlock[]) => {
-      if (planned.length === 0) return 0;
       let score = 0;
-      const completionRatio = planned.filter(b => b.status === 'Completed').length / planned.length;
-      score += completionRatio * 40;
+      
+      const pEff = calculateEffectiveDurations(planned);
+      const pMs = planned.reduce((acc, b) => acc + (pEff[b.id] || 0), 0);
+      const planRatio = Math.min(pMs / (14 * 3600000), 1);
+      score += planRatio * 40;
 
-      const pMs = planned.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-      const tMs = tracked.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-      if (pMs > 0) {
-        score += Math.min(tMs / pMs, 1) * 40;
-      }
+      const tEff = calculateEffectiveDurations(tracked);
+      const tMs = tracked.reduce((acc, b) => acc + (tEff[b.id] || 0), 0);
+      const recordRatio = Math.min(tMs / (14 * 3600000), 1);
+      score += recordRatio * 40;
 
-      const trackingRatio = Math.min(tracked.filter(b => b.linkedPlannerTaskId).length / planned.length, 1);
-      score += trackingRatio * 20;
+      const plannedCategoryIds = new Set(planned.map(b => b.categoryId || b.category).filter(Boolean));
+      let matchedMs = 0;
+      tracked.forEach(b => {
+        const catId = b.categoryId || b.category;
+        if (catId && plannedCategoryIds.has(catId)) {
+          matchedMs += (tEff[b.id] || 0);
+        }
+      });
+      const matchRatio = tMs > 0 ? Math.min(matchedMs / tMs, 1) : 0;
+      score += matchRatio * 20;
 
       return Math.round(score);
     };
@@ -136,8 +148,10 @@ export function useAnalyticsData({
         daysWithPlans++;
       }
       
-      const tMs = data.tracked.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-      const pMs = data.planned.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
+      const tEff = calculateEffectiveDurations(data.tracked);
+      const tMs = data.tracked.reduce((acc, b) => acc + (tEff[b.id] || 0), 0);
+      const pEff = calculateEffectiveDurations(data.planned);
+      const pMs = data.planned.reduce((acc, b) => acc + (pEff[b.id] || 0), 0);
       
       let fSessions = 0;
       data.tracked.forEach(b => {
@@ -201,19 +215,28 @@ export function useAnalyticsData({
     const heatmap = new Map<string, number>();
 
     const calculateAlignment = (tracked: TimeBlock[], planned: TimeBlock[]) => {
-      if (planned.length === 0) return 0;
       let score = 0;
-      const completionRatio = planned.filter(b => b.status === 'Completed').length / planned.length;
-      score += completionRatio * 40;
+      
+      const pEff = calculateEffectiveDurations(planned);
+      const pMs = planned.reduce((acc, b) => acc + (pEff[b.id] || 0), 0);
+      const planRatio = Math.min(pMs / (14 * 3600000), 1);
+      score += planRatio * 40;
 
-      const pMs = planned.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-      const tMs = tracked.reduce((acc, b) => acc + (b.endTime - b.startTime), 0);
-      if (pMs > 0) {
-        score += Math.min(tMs / pMs, 1) * 40;
-      }
+      const tEff = calculateEffectiveDurations(tracked);
+      const tMs = tracked.reduce((acc, b) => acc + (tEff[b.id] || 0), 0);
+      const recordRatio = Math.min(tMs / (14 * 3600000), 1);
+      score += recordRatio * 40;
 
-      const trackingRatio = Math.min(tracked.filter(b => b.linkedPlannerTaskId).length / planned.length, 1);
-      score += trackingRatio * 20;
+      const plannedCategoryIds = new Set(planned.map(b => b.categoryId || b.category).filter(Boolean));
+      let matchedMs = 0;
+      tracked.forEach(b => {
+        const catId = b.categoryId || b.category;
+        if (catId && plannedCategoryIds.has(catId)) {
+          matchedMs += (tEff[b.id] || 0);
+        }
+      });
+      const matchRatio = tMs > 0 ? Math.min(matchedMs / tMs, 1) : 0;
+      score += matchRatio * 20;
 
       return Math.round(score);
     };

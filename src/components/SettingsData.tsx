@@ -197,6 +197,29 @@ export default function SettingsData() {
           </div>
         </section>
 
+        {/* Local Network Sync (Upcoming) */}
+        <section className="md:col-span-2 liquid-panel p-6 rounded-md border border-[#222]">
+          <h3 className="font-mono text-sm text-[#aaaaaa] uppercase tracking-widest mb-6 border-b border-[#333] pb-2 flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+            Local Network Sync (Coming Soon)
+          </h3>
+          
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 opacity-50 pointer-events-none">
+            <div>
+              <h4 className="font-serif text-lg text-white mb-1">Sync Across Devices</h4>
+              <p className="font-mono text-xs text-[#888]">
+                Seamlessly synchronize your data between devices on the same local network without cloud storage.
+              </p>
+            </div>
+            <button 
+              disabled
+              className="px-6 py-3 font-mono text-xs uppercase tracking-widest transition-all rounded-sm border bg-transparent text-[#555] border-[#333] cursor-not-allowed"
+            >
+              Configure Sync
+            </button>
+          </div>
+        </section>
+
       </div>
     </div>
   );

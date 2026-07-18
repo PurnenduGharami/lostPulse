@@ -47,9 +47,6 @@ export default function TimePlannerContainer({ userProfile, plannedBlocks, plann
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    if (tab === 'live') {
-      setCurrentDate(getTodayStr());
-    }
   };
 
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
@@ -173,8 +170,7 @@ export default function TimePlannerContainer({ userProfile, plannedBlocks, plann
             )}
             <button 
               onClick={() => handleDateChange(1)}
-              disabled={isToday()}
-              className={`font-mono text-sm transition-colors px-2 py-1 min-h-[44px] min-w-[44px] flex items-center justify-center ${isToday() ? 'text-[#222222] cursor-not-allowed' : 'text-white hover:text-white'}`}
+              className="font-mono text-sm transition-colors px-2 py-1 min-h-[44px] min-w-[44px] flex items-center justify-center text-white hover:text-white"
             >
               &gt;
             </button>

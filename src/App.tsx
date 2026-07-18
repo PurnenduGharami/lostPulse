@@ -19,12 +19,12 @@ import { calculateLifeRemaining, getMaxHoursInSingleDay, getCompletedDaysCount }
 
 const DEFAULT_CATEGORIES: Category[] = [
   { id: 'uncategorized', name: 'Uncategorized', color: '#555555', lastUsedAt: 0, isUncategorized: true },
-  { id: 'STUDY', name: 'Study', color: '#ffffff', lastUsedAt: 0 },
-  { id: 'WORK', name: 'Work', color: '#ffcccc', lastUsedAt: 0 },
-  { id: 'SLEEP', name: 'Sleep', color: '#ff9999', lastUsedAt: 0 },
-  { id: 'GAMING', name: 'Gaming', color: '#ff6666', lastUsedAt: 0 },
-  { id: 'SOCIAL', name: 'Social', color: '#ff3333', lastUsedAt: 0 },
-  { id: 'OTHER', name: 'Other', color: '#8b0000', lastUsedAt: 0 },
+  { id: 'STUDY', name: 'Study', color: '#3b82f6', lastUsedAt: 0 },
+  { id: 'WORK', name: 'Work', color: '#10b981', lastUsedAt: 0 },
+  { id: 'SLEEP', name: 'Sleep', color: '#8b5cf6', lastUsedAt: 0 },
+  { id: 'GAMING', name: 'Gaming', color: '#f43f5e', lastUsedAt: 0 },
+  { id: 'SOCIAL', name: 'Social', color: '#f59e0b', lastUsedAt: 0 },
+  { id: 'OTHER', name: 'Other', color: '#06b6d4', lastUsedAt: 0 },
 ];
 
 function App() {
@@ -687,7 +687,7 @@ function App() {
         className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none bg-black"
         style={{ opacity: 0.7 }}
       >
-        <source src="/assets/video/hero4k.mp4" type="video/mp4" />
+        <source src="./assets/video/hero4k.mp4" type="video/mp4" />
       </video>
       <main 
         className="relative z-10 w-full h-screen bg-transparent overflow-y-scroll snap-y snap-mandatory scroll-smooth"

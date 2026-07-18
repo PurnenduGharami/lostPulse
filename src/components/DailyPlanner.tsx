@@ -283,7 +283,7 @@ export default function DailyPlanner({
 
 
       {/* Header Goals */}
-      <div className="w-full liquid-panel p-8 rounded-md mb-8 mt-4 flex flex-col md:flex-row gap-8">
+      <div className="w-full liquid-panel p-8 rounded-md mb-8 mt-4 flex flex-col md:flex-row gap-4 lg:gap-8">
         <div className="flex-1 space-y-2">
           <label className="font-mono text-[10px] text-red-500 uppercase tracking-widest">Today's Goal</label>
           <input 
@@ -294,7 +294,7 @@ export default function DailyPlanner({
               saveNotes(e.target.value, localWhy, localReflection);
             }}
             placeholder="What is the one thing you must accomplish?"
-            className="w-full bg-transparent border-b border-white/20 focus:border-white text-white font-serif text-2xl outline-none py-2 transition-colors"
+            className="w-full bg-transparent border-b border-white/20 focus:border-white text-white font-serif text-xl lg:text-2xl outline-none py-2 transition-colors"
           />
         </div>
         <div className="flex-1 space-y-2">
@@ -307,8 +307,22 @@ export default function DailyPlanner({
               saveNotes(localGoal, e.target.value, localReflection);
             }}
             placeholder="Why is this goal important to you?"
-            className="w-full bg-transparent border-b border-white/20 focus:border-white text-white font-serif text-xl outline-none py-2 transition-colors italic text-[#cccccc]"
+            className="w-full bg-transparent border-b border-white/20 focus:border-white text-white font-serif text-lg lg:text-xl outline-none py-2 transition-colors italic text-[#cccccc]"
           />
+        </div>
+        <div className="flex-1 space-y-2">
+          <label className="font-mono text-[10px] text-[#aaaaaa] uppercase tracking-widest flex items-center justify-between">
+            <span>One-Time Goal</span>
+            <button 
+              onClick={() => setIsReflecting(true)}
+              className="text-[9px] text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              EDIT
+            </button>
+          </label>
+          <div className="w-full bg-transparent border-b border-white/10 text-white font-serif text-sm lg:text-base py-2 italic text-[#999] min-h-[44px] break-words">
+            "{localReflection}"
+          </div>
         </div>
       </div>
 
