@@ -141,7 +141,7 @@ export default function SettingsGoals({ userProfile, onUpdateProfile }: Settings
                       </span>
                     </div>
                     <p className="font-mono text-xs text-[#888] mb-2">{goal.description}</p>
-                    <div className="flex gap-4 font-mono text-[10px] uppercase text-[#666]">
+                    <div className="flex flex-wrap gap-2 sm:gap-4 font-mono text-[10px] uppercase text-[#666]">
                       <span>Priority: {goal.priority}</span>
                       <span>Status: {goal.status.replace('_', ' ')}</span>
                       {goal.targetDate && <span>Target: {goal.targetDate}</span>}
@@ -189,7 +189,7 @@ export default function SettingsGoals({ userProfile, onUpdateProfile }: Settings
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="font-mono text-xs text-[#888] uppercase">Type</label>
                   <LiquidSelect 
@@ -218,7 +218,7 @@ export default function SettingsGoals({ userProfile, onUpdateProfile }: Settings
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="font-mono text-xs text-[#888] uppercase">Status</label>
                   <LiquidSelect 
@@ -243,7 +243,7 @@ export default function SettingsGoals({ userProfile, onUpdateProfile }: Settings
 
               <div className="flex flex-col gap-2">
                 <label className="font-mono text-xs text-[#888] uppercase">Color</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {['#ffffff', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'].map(c => (
                     <button 
                       key={c}

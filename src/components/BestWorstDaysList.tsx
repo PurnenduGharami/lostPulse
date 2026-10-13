@@ -15,13 +15,13 @@ export default function BestWorstDaysList({ data }: BestWorstDaysListProps) {
 
   const renderDay = (d: { date: string; alignment: number; trackedMs: number }, i: number, type: 'best' | 'worst') => (
     <div key={i} className="flex items-center justify-between p-3 border-b border-[#222] last:border-0 hover:bg-[#111] transition-colors">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <span className={`font-mono text-sm w-6 text-center ${type === 'best' ? 'text-emerald-500' : 'text-red-500'}`}>
           {i + 1}
         </span>
         <span className="font-mono text-sm text-[#ccc]">{d.date}</span>
       </div>
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 sm:gap-6">
         <span className="font-mono text-[10px] text-[#666] w-16 text-right">
           {(d.trackedMs / 3600000).toFixed(1)}h
         </span>

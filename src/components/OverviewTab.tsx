@@ -180,7 +180,7 @@ export default function OverviewTab({ userProfile, timeBlocks, categories, daily
         </div>
 
         {/* Bottom: Horizontal Summary Row */}
-        <div className="w-full flex flex-row items-center justify-between text-center mt-2 mb-4">
+        <div className="w-full flex flex-row flex-wrap items-center justify-between sm:justify-between text-center mt-2 mb-4">
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-mono text-[#aaaaaa] uppercase tracking-widest mb-1">Marked</span>
             <span className="text-base md:text-lg font-serif text-red-500 font-bold">{formatDuration(markedMs)}</span>
@@ -222,7 +222,7 @@ export default function OverviewTab({ userProfile, timeBlocks, categories, daily
           </div>
         </div>
 
-        <div className="w-full flex justify-center gap-12 md:gap-20 h-40 mt-auto">
+        <div className="w-full flex justify-center gap-4 sm:gap-12 md:gap-20 h-40 mt-auto">
           {/* Factor 1: Marked Time */}
           <div className="flex flex-col items-center justify-end h-full">
             <span className="text-base font-serif text-white font-bold mb-3">{Math.round(percentageMarked)}%</span>

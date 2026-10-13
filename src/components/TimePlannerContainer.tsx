@@ -143,7 +143,7 @@ export default function TimePlannerContainer({ userProfile, plannedBlocks, plann
       )}
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3">
-        <div className="flex items-center space-x-4 sm:space-x-8">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-8">
           <h2 className="font-serif text-xl sm:text-2xl text-white font-bold tracking-wide whitespace-nowrap">
             {activeTab === 'journal' ? 'Blueprint' : 'KRONOS BLUEPRINT'}
           </h2>

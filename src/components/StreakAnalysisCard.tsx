@@ -41,17 +41,17 @@ export default function StreakAnalysisCard({ data }: StreakAnalysisCardProps) {
       </p>
 
       <div className="flex flex-col gap-6 flex-1 justify-center">
-        <div className="flex justify-between items-center border-b border-[#333] pb-4">
+        <div className="flex flex-wrap justify-between items-end sm:items-center border-b border-[#333] pb-4 gap-2">
           <span className="font-mono text-sm text-[#ccc] uppercase tracking-widest">Current Streak</span>
           <span className="font-mono text-2xl text-emerald-500">{current} <span className="text-sm text-[#888]">days</span></span>
         </div>
         
-        <div className="flex justify-between items-center border-b border-[#333] pb-4">
+        <div className="flex flex-wrap justify-between items-end sm:items-center border-b border-[#333] pb-4 gap-2">
           <span className="font-mono text-sm text-[#ccc] uppercase tracking-widest">Longest Streak</span>
           <span className="font-mono text-2xl text-white">{longest} <span className="text-sm text-[#888]">days</span></span>
         </div>
         
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-end sm:items-center gap-2">
           <span className="font-mono text-sm text-[#ccc] uppercase tracking-widest">Longest Missed</span>
           <span className="font-mono text-2xl text-red-500">{missed} <span className="text-sm text-[#888]">days</span></span>
         </div>

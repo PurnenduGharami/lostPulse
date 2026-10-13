@@ -207,7 +207,7 @@ function ManageCategoriesModal({ categories, categoryActions, onClose }: { categ
             </div>
             <div>
               <label className="block text-xs text-white font-mono mb-2">Color</label>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-3">
                 {shades.map(s => (
                   <button
                     key={s}

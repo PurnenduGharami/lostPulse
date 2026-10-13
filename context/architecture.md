@@ -15,6 +15,7 @@
 - **Frontend Framework:** React 19
 - **Build Tool:** Vite
 - **Desktop Runtime:** Electron (v34)
+- **Mobile Runtime:** Capacitor (v6)
 - **Styling:** Tailwind CSS (v4)
 - **Animation:** Motion (Framer Motion)
 - **Icons:** Lucide React
@@ -98,6 +99,7 @@ Data is stored as raw JSON text files for each major entity (e.g., `profile.json
 # Storage
 
 - **Electron Environment:** JSON files are saved to the user's OS-specific app data folder (`app.getPath('userData')/data/`). Markdown reports are saved to (`app.getPath('userData')/reports/`).
+- **Capacitor / Mobile Environment:** Data is saved to the Android WebView's `localStorage` as a fallback when `window.electronAPI` is unavailable.
 - **Browser Environment:** Data is saved to the browser's `localStorage` as a fallback.
 
 ---

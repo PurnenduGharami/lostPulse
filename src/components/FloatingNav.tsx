@@ -78,7 +78,7 @@ export default function FloatingNav({ activeWorkspace, onSelectWorkspace, isVisi
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto liquid-glass rounded-2xl p-2 w-64 border border-[#333333] shadow-2xl flex flex-col gap-1 origin-bottom sm:origin-bottom-left"
+              className="pointer-events-auto liquid-glass rounded-2xl p-2 w-64 max-w-[calc(100vw-32px)] border border-[#333333] shadow-2xl flex flex-col gap-1 origin-bottom sm:origin-bottom-left"
             >
               {workspaces.map((workspace) => (
                 <button

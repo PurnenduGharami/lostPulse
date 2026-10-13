@@ -110,7 +110,7 @@ The application is a Single Page Application (SPA). It uses scrollable sections 
 
 # Assumptions
 
-- The application is intended to run as a desktop app via Electron or in the browser via Vite.
+- The application is intended to run as a desktop app via Electron, a mobile app (APK) via Capacitor, or in the browser via Vite.
 - All user data is stored locally.
 
 ---

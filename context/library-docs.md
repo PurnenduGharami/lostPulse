@@ -66,6 +66,15 @@
 - **Common Mistakes:** Forgetting to handle asynchronous IPC resolution states in the React UI, leading to race conditions before data is loaded from disk.
 - **Upgrade Notes:** Electron upgrades frequently break IPC syntax or introduce new security sandbox requirements. Read Electron breaking changes thoroughly before upgrading.
 
+## Capacitor
+- **Purpose:** Cross-platform native runtime for mobile apps.
+- **Why We Use It:** Allows wrapping the existing Vite web build (`dist/`) into a native Android APK without rewriting the application in React Native.
+- **Initialization:** Initialized via `capacitor.config.ts`. The native Android project is located in `android/`.
+- **Project Usage:** Used for building Android APKs via `npx cap build android`.
+- **Restrictions:** The React UI must gracefully fallback to `localStorage` when `window.electronAPI` is undefined (which is true in the Capacitor WebView).
+- **Common Mistakes:** Forgetting to run `npm run build && npx cap sync android` before attempting to compile a new APK, resulting in an outdated web bundle in the mobile app.
+- **Upgrade Notes:** Requires Java 21 for compiling the Android Gradle project. Keep `@capacitor/core` and `@capacitor/android` versions synchronized.
+
 ---
 
 # Open Questions

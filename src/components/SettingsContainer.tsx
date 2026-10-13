@@ -114,7 +114,7 @@ export default function SettingsContainer({
         {/* Content Area */}
         <div className="flex-1 h-full bg-[#0a0a0c]/90 overflow-hidden relative">
           {/* Header */}
-          <header className="h-20 border-b border-[#333] flex items-center px-8 flex-shrink-0">
+          <header className="h-20 border-b border-[#333] flex items-center px-4 sm:px-8 flex-shrink-0">
             <div className="flex items-center gap-2 font-mono text-xs text-[#888] uppercase tracking-widest">
               <span>Settings</span>
               <span>/</span>
@@ -123,7 +123,7 @@ export default function SettingsContainer({
           </header>
 
           {/* Scrollable Content */}
-          <main className="absolute inset-0 top-20 overflow-y-auto custom-scrollbar p-8">
+          <main className="absolute inset-0 top-20 overflow-y-auto custom-scrollbar p-4 sm:p-8">
             {activeTab === 'profile' && (
               <SettingsProfile userProfile={userProfile} onUpdateProfile={onUpdateProfile} goals={goals} onSaveGoal={onSaveGoal} />
             )}

@@ -496,8 +496,8 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col lg:flex-row gap-4 sm:gap-6">
-      <div className="relative z-10 h-full flex-1 flex flex-col min-w-0">
+    <div className="relative w-full h-full flex flex-col lg:flex-row gap-4 sm:gap-6 overflow-y-auto lg:overflow-hidden custom-scrollbar pb-20 lg:pb-0">
+      <div className="relative z-10 h-full flex-1 flex flex-col min-w-0 min-h-[500px] lg:min-h-0">
         <div className="flex justify-end items-center mb-6 gap-3">
           <button
             onClick={handleCopyYesterday}
@@ -745,7 +745,7 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
                     </h2>
 
                     <div className="space-y-4 mb-6">
-                      <div className="flex space-x-4">
+                      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                         <div className="flex-1">
                           <label className="block text-xs text-white font-mono mb-1">Start Time</label>
                           <input
@@ -765,7 +765,7 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
                           />
                         </div>
                       </div>
-                      <div className="flex space-x-4">
+                      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                         <div className="flex-[1]">
                           <label className="block text-xs text-white font-mono mb-1">Total Time (mins)</label>
                           <div className="w-full bg-transparent text-[#aaaaaa] text-left text-sm px-2 py-2">
@@ -780,7 +780,7 @@ export default function PlannerGrid({ timeBlocks, blockActions, currentDate, cat
                         </div>
                         <div className="flex-[2]" />
                       </div>
-                      <div className="flex space-x-4">
+                      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                         <div className="flex-[2]">
                           <label className="block text-xs text-white font-mono mb-1">Title</label>
                           <input
