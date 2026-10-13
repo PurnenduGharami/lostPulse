@@ -23,3 +23,5 @@ dist-electron
 *.njsproj
 *.sln
 *.sw?
+*.zip
+lostpulse-code.txt

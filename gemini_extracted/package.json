@@ -1,0 +1,75 @@
+{
+  "name": "lost-pulse",
+  "description": "Local-first desktop & mobile application for tracking and planning time against your lifespan.",
+  "author": "Purnendu Gharami",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "electron:dev": "NODE_ENV=development electron .",
+    "electron:start": "electron .",
+    "electron:build": "npm run build && electron-builder",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux",
+    "mobile:init:ios": "npm install @capacitor/ios && npx cap add ios",
+    "mobile:sync": "npm run build && npx cap sync",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "ios:open": "npx cap open ios"
+  },
+  "build": {
+    "appId": "com.lostpulse.app",
+    "productName": "Lost Pulse",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "public/assets/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.4.2",
+    "@types/uuid": "^10.0.0",
+    "lucide-react": "^1.23.0",
+    "motion": "^12.42.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-virtuoso": "^4.18.10",
+    "recharts": "^3.9.2"
+  }
+}

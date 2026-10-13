@@ -13,9 +13,10 @@ import ProgressionOverlay from './components/ProgressionOverlay';
 import FirstTimeGuidance from './components/FirstTimeGuidance';
 
 import SettingsContainer from './components/SettingsContainer';
+import CommandPalette from './components/CommandPalette';
 import { v4 as uuidv4 } from 'uuid';
 import { useNotification } from './contexts/NotificationContext';
-import { calculateLifeRemaining, getMaxHoursInSingleDay, getCompletedDaysCount } from './utils';
+import { calculateLifeRemaining, getMaxHoursInSingleDay, getCompletedDaysCount, playPulseChime } from './utils';
 
 const DEFAULT_CATEGORIES: Category[] = [
   { id: 'uncategorized', name: 'Uncategorized', color: '#555555', lastUsedAt: 0, isUncategorized: true },
@@ -72,6 +73,41 @@ function App() {
 
   // Goals State
   const [goals, setGoals] = useState<Record<string, string>>({});
+
+  // Command Palette & Global Indicators
+  const [isCmdOpen, setIsCmdOpen] = useState(false);
+  const [mainScrollTop, setMainScrollTop] = useState(0);
+  const [activeTimerLabel, setActiveTimerLabel] = useState<string | null>(null);
+
+  // Global Active Session Indicator
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const liveStart = localStorage.getItem('activeSessionStartTime');
+      const livePause = localStorage.getItem('activeSessionPauseTime');
+      if (liveStart && !livePause) {
+        const elapsed = Math.floor((Date.now() - parseInt(liveStart, 10)) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        setActiveTimerLabel(`${pad(mins)}:${pad(secs)}`);
+      } else {
+        setActiveTimerLabel(null);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Global Ctrl+K / Cmd+K Command Palette Shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCmdOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   useEffect(() => {
     const initialize = async () => {
       const [profile, blocks, notes, loadedCategories, pBlocks, pNotes, reflections, loadedGoals, loadedProgression] = await Promise.all([
@@ -656,6 +692,55 @@ function App() {
     markCategoryUsed: handleMarkCategoryUsed
   };
 
+  const handleQuickLogBlock = async (dateStr: string, block: TimeBlock): Promise<boolean> => {
+    blockActions.saveBlock(dateStr, block);
+    playPulseChime();
+    toast(`Time Block Logged: "${block.title}" recorded for ${dateStr}.`);
+    return true;
+  };
+
+  const handleExportMarkdown = async () => {
+    const today = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+    const blocks = timeBlocks[todayStr] || [];
+    
+    let md = `# LOST PULSE CHRONICLE - ${todayStr}\n\n`;
+    md += `## Time Blocks\n`;
+    if (blocks.length === 0) {
+      md += `*No blocks recorded for this date.*\n`;
+    } else {
+      blocks.forEach(b => {
+        const start = new Date(b.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const end = new Date(b.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const cat = categories.find(c => c.id === b.categoryId)?.name || b.category || 'Uncategorized';
+        md += `- **${start} - ${end}**: ${b.title} [${cat}]\n`;
+        if (b.description) md += `  - *${b.description}*\n`;
+      });
+    }
+
+    if (dailyNotes[todayStr]?.length) {
+      md += `\n## Daily Notes\n`;
+      dailyNotes[todayStr].forEach(n => {
+        md += `- ${n}\n`;
+      });
+    }
+
+    if (window.electronAPI?.exportMarkdown) {
+      await window.electronAPI.exportMarkdown(md, `lostpulse_${todayStr}.md`);
+      toast(`Export Complete: Saved lostpulse_${todayStr}.md via desktop storage.`);
+    } else {
+      const blob = new Blob([md], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lostpulse_${todayStr}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast(`Chronicle Exported: Downloaded lostpulse_${todayStr}.md`);
+    }
+  };
+
 
 
   if (!isLoaded) {
@@ -691,10 +776,13 @@ function App() {
       </video>
       <main 
         className="relative z-10 w-full h-screen bg-transparent overflow-y-scroll snap-y snap-mandatory scroll-smooth"
-        onScroll={(e) => setIsNavVisible(e.currentTarget.scrollTop > window.innerHeight * 0.5)}
+        onScroll={(e) => {
+          setIsNavVisible(e.currentTarget.scrollTop > window.innerHeight * 0.5);
+          setMainScrollTop(e.currentTarget.scrollTop);
+        }}
       >
         <section className="snap-start w-full h-screen">
-          <HeroSection userProfile={userProfile} />
+          <HeroSection userProfile={userProfile} scrollTop={mainScrollTop} />
         </section>
         
         <section className="snap-start w-full min-h-screen relative">
@@ -822,6 +910,26 @@ function App() {
         onSelectWorkspace={handleSelectWorkspace} 
         isVisible={isNavVisible}
         progressionState={progression}
+      />
+
+      {activeTimerLabel && (
+        <button
+          onClick={() => handleSelectWorkspace('tracker')}
+          className="fixed top-6 right-6 z-40 liquid-glass border border-red-500/40 rounded-full px-3.5 py-1.5 flex items-center gap-2.5 shadow-lg hover:border-red-500 transition-all cursor-pointer group"
+        >
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="font-mono text-xs font-bold text-white tracking-widest">{activeTimerLabel}</span>
+          <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider group-hover:text-red-400 transition-colors">REC</span>
+        </button>
+      )}
+
+      <CommandPalette
+        isOpen={isCmdOpen}
+        onClose={() => setIsCmdOpen(false)}
+        onSelectWorkspace={handleSelectWorkspace}
+        categories={categories}
+        onQuickLogBlock={handleQuickLogBlock}
+        onExportMarkdown={handleExportMarkdown}
       />
     </>
   );

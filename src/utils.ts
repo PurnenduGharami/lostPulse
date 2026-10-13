@@ -34,14 +34,15 @@ export const formatTimeString = (ts: number, profile?: UserProfile | null) => {
 
 // Mathematical Engines
 export const calculateLifeRemaining = (profile: UserProfile | null) => {
-  if (!profile || !profile.birthDate || !profile.targetLifespan) {
-    return { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0, percentage: 0 };
+  const lifespan = profile ? (profile.targetLifespan || profile.targetLifespanYears || 0) : 0;
+  if (!profile || !profile.birthDate || !lifespan) {
+    return { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0, percentage: 0, isOverdue: false };
   }
 
   const birth = new Date(profile.birthDate).getTime();
   const now = new Date().getTime();
   const end = new Date(profile.birthDate);
-  end.setFullYear(end.getFullYear() + profile.targetLifespan);
+  end.setFullYear(end.getFullYear() + lifespan);
   const endTime = end.getTime();
 
   const remainingMs = Math.max(0, endTime - now);
@@ -310,3 +311,41 @@ export const getCompletedDaysCount = (timeBlocks: Record<string, import('./types
   }
   return count;
 };
+
+/**
+ * Standard date string formatter (YYYY-MM-DD)
+ */
+export function formatDateKey(date: Date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Zero-dependency Web Audio API Chime Synthesizer
+ */
+export function playPulseChime() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(528, ctx.currentTime); // Solfeggio 528Hz frequency
+
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.5);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 2.5);
+  } catch {
+    // AudioContext blocked or unsupported
+  }
+}
+

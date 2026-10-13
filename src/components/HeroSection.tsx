@@ -5,6 +5,7 @@ import type { UserProfile } from '../types';
 
 interface HeroSectionProps {
   userProfile: UserProfile;
+  scrollTop?: number;
 }
 
 // Memoized Countdown component prevents the entire HeroSection from re-rendering every second
@@ -55,7 +56,7 @@ const CountdownDisplay = memo(({ userProfile, textOpacity }: { userProfile: User
 });
 CountdownDisplay.displayName = 'CountdownDisplay';
 
-export default function HeroSection({ userProfile }: HeroSectionProps) {
+export default function HeroSection({ userProfile, scrollTop }: HeroSectionProps) {
   const [scrollY, setScrollY] = useState(0);
   const maskRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +69,8 @@ export default function HeroSection({ userProfile }: HeroSectionProps) {
   }, []);
 
   const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const textOpacity = Math.max(1 - scrollY / (windowHeight * 0.45), 0);
+  const currentScroll = scrollTop !== undefined ? scrollTop : scrollY;
+  const textOpacity = Math.max(1 - currentScroll / (windowHeight * 0.45), 0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!maskRef.current) return;
@@ -97,14 +99,14 @@ export default function HeroSection({ userProfile }: HeroSectionProps) {
           className="flex-1 h-full relative opacity-0 hover:opacity-100 transition-opacity duration-500 overflow-hidden"
           style={{ WebkitMaskImage: 'linear-gradient(to right, black 0%, black 60%, transparent 100%)', maskImage: 'linear-gradient(to right, black 0%, black 60%, transparent 100%)' }}
         >
-          <img src="/assets/left.png" className="absolute inset-0 w-full h-[105%] -top-[2.5%] object-cover block" alt="Left" />
+          <img src="./assets/left.png" className="absolute inset-0 w-full h-[105%] -top-[2.5%] object-cover block" alt="Left" />
         </div>
         <div className="flex-1 h-full pointer-events-none"></div>
         <div
           className="flex-1 h-full relative opacity-0 hover:opacity-100 transition-opacity duration-500 overflow-hidden"
           style={{ WebkitMaskImage: 'linear-gradient(to left, black 0%, black 60%, transparent 100%)', maskImage: 'linear-gradient(to left, black 0%, black 60%, transparent 100%)' }}
         >
-          <img src="/assets/right.png" className="absolute inset-0 w-full h-[105%] -top-[2.5%] object-cover block" alt="Right" />
+          <img src="./assets/right.png" className="absolute inset-0 w-full h-[105%] -top-[2.5%] object-cover block" alt="Right" />
         </div>
       </div>
 

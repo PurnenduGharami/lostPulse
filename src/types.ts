@@ -2,6 +2,7 @@ export interface UserProfile {
   name: string;
   birthDate: string; // YYYY-MM-DD
   targetLifespan: number; // in years
+  targetLifespanYears?: number; // v2 unified alias
   createdAt: number; // exact time of registration (epoch ms)
   gender?: string;
   country?: string;
@@ -93,6 +94,11 @@ export interface DailyReflection {
   date: string;
   wasWorthIt: boolean | null;
   reason: string;
+  energy?: number; // 1-5
+  focus?: number; // 1-5
+  mood?: string;
+  rating?: number; // 1-5
+  note?: string;
 }
 
 export interface TimeJournalFilters {
